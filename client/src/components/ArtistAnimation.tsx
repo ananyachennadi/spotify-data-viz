@@ -15,15 +15,15 @@ const ArtistAnimation = ({chartData}) => {
     }, [chartData]);
 
   return (
-	<div className='flex flex-col w-[40%] h-[300px] rounded-xl p-5 bg-[#25272e]'>
+	<div className='flex flex-col w-[47%] h-[300px] rounded-xl p-5 bg-[#25272e]'>
         <p className='text-[#ffffff] mb-2'>Your Top Artists</p>
         <div className='flex-1'>
             <ResponsiveContainer width='100%' height='100%'>
-                <BarChart data={artistData[selectedTimeRange]} layout='vertical'>
+                <BarChart data={artistData[selectedTimeRange]} layout='vertical' key={selectedTimeRange}>
                     <XAxis type="number" hide />
                     <YAxis type="category" dataKey="name" hide />
                     <Tooltip />
-                    <Bar dataKey="value" fill='#fbc92c' rx={10} minPointSize={10} >
+                    <Bar dataKey="value" fill='#fbc92c' animationEasing='ease-in' >
                         <LabelList dataKey="name" position="middle" fill='#000000' fontSize={13}/>
                     </Bar>
                 </BarChart>
