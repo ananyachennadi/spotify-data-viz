@@ -17,7 +17,7 @@ html, body {
   padding: 0;
 }
 
-.flex{
+.flex-centre{
     display: flex;
     flex-direction: column;
     justify-content: center;

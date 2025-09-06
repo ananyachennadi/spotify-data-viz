@@ -67,7 +67,7 @@ function App() {
 
   // if user is not authenticated render login component otherwise render dashboard and components in dashboard
   return (
-    <div className="flex h-full w-full">
+    <div className="flex-centre h-full w-full">
       {!loginSuccess ? (
         <Login />
       ) : (

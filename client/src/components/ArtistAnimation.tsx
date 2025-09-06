@@ -1,45 +1,59 @@
-import { useState } from 'react';
-import {Area, AreaChart, BarChart, XAxis, YAxis, Tooltip} from 'recharts'
+import { useState, useEffect} from 'react';
+import {LabelList, Bar, BarChart, XAxis, YAxis, Tooltip, ResponsiveContainer} from 'recharts'
 
-const ArtistAnimation = () => {
-    const [chartData, setChartData] = useState([]);
-    
-    const fetchData = async() => {
-            console.log('hekko')
-        
-        try {
-            const response = await fetch('https://127.0.0.1:5000/artist-animated', {
-                credentials: 'include'
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                const transformedData = data.map((name, index) => ({
-                    name: name,
-                    value: 20 - (index * 2)
-                }));
-                setChartData(transformedData);
-            } else {
-                console.error("Failed to fetch artist data. Status:", response.status);
-            }
-            
+const ArtistAnimation = ({chartData}) => {
+    // set artist data when a change is detected in the input parameter
+    const [artistData, setArtistData] = useState({
+        short_term: [],
+        medium_term: [],
+        long_term: []
+      });
+    const [selectedTimeRange, setSelectedTimeRange] = useState('short_term');
 
-        } catch (error) {
-            console.error("Network or parsing error:", error);
-        }
-    };
+    useEffect(() => {
+        setArtistData(chartData);
+    }, [chartData]);
 
-    fetchData();
   return (
-	<div>
-        <AreaChart width={500} height={300} data={chartData}>
-            <XAxis dataKey='name'></XAxis>
-            <YAxis></YAxis>
-            <Tooltip />
-            <Area dataKey='index'></Area>
-        </AreaChart>
-	</div>
+	<div className='flex flex-col w-[40%] h-[300px] rounded-xl p-5 bg-[#25272e]'>
+        <p className='text-[#ffffff] mb-2'>Your Top Artists</p>
+        <div className='flex-1'>
+            <ResponsiveContainer width='100%' height='100%'>
+                <BarChart data={artistData[selectedTimeRange]} layout='vertical'>
+                    <XAxis type="number" hide />
+                    <YAxis type="category" dataKey="name" hide />
+                    <Tooltip />
+                    <Bar dataKey="value" fill='#fbc92c' rx={10} minPointSize={10} >
+                        <LabelList dataKey="name" position="middle" fill='#000000' fontSize={13}/>
+                    </Bar>
+                </BarChart>
+            </ResponsiveContainer>
+        </div>
+        <div className="flex justify-center items-center mt-4">
+            <div className="flex space-x-2">
+                <button
+                    onClick={() => setSelectedTimeRange('short_term')}
+                    className={`px-3 py-1 text-xs rounded-full ${selectedTimeRange === 'short_term' ? 'bg-white text-black' : 'bg-gray-700 text-white'}`}
+                >
+                    short-term
+                </button>
+                <button
+                    onClick={() => setSelectedTimeRange('medium_term')}
+                    className={`px-3 py-1 text-xs rounded-full ${selectedTimeRange === 'medium_term' ? 'bg-white text-black' : 'bg-gray-700 text-white'}`}
+                >
+                    medium-term
+                </button>
+                <button
+                    onClick={() => setSelectedTimeRange('long_term')}
+                    className={`px-3 py-1 text-xs rounded-full ${selectedTimeRange === 'long_term' ? 'bg-white text-black' : 'bg-gray-700 text-white'}`}
+                >
+                    long-term
+                </button>
+            </div>
+        </div>
+    </div>
   )
+
 };
 
 export default ArtistAnimation;
