@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import Login from "./components/Login";
 import ArtistAnimation from "./components/ArtistAnimation";
 import GenreAnimation from "./components/GenreAnimation";
+import PlaylistAnimation from "./components/PlaylistAnimation";
 
 function App() {
   const [loginSuccess, setLoginSuccess] = useState(false);
@@ -100,10 +101,12 @@ function App() {
       {!loginSuccess ? (
         <Login />
       ) : (
+        <>
         <div className="flex w-full justify-center items-center space-x-6">
-          <ArtistAnimation chartData={artistData} />
-          <GenreAnimation chartData={genreData} />
-        </div>
+            <ArtistAnimation chartData={artistData} />
+            <GenreAnimation chartData={genreData} />
+          </div><PlaylistAnimation playlistId='34DBc5q2EDa6snxvsLsSw9'/>
+          </>
       )}
     </div>
   );

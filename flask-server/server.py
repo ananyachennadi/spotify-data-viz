@@ -9,7 +9,7 @@ from flask_cors import CORS
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app, supports_credentials=True)
+CORS(app, supports_credentials=True, origins=["https://127.0.0.1:5173"])
 
 app.secret_key = os.getenv('SECRET_KEY')
 clientId = os.getenv('SPOTIFY_CLIENT_ID')

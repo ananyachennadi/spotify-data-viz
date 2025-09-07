@@ -26,7 +26,10 @@ const GenreAnimation = ({ chartData }) => {
                     <BarChart data={genreData[selectedTimeRange]} layout='vertical' key={selectedTimeRange}>
                         <XAxis type="number" hide />
                         <YAxis type="category" dataKey="genre" hide />
-                        <Tooltip />
+                        <Tooltip wrapperStyle={{visibility: 'hidden',
+    backgroundColor: 'transparent',
+    border: 'none',
+    padding: 0,}}/>
                         <Bar dataKey="count" fill='#FF8C94' animationEasing='ease-in'>
                             <LabelList dataKey="genre" position="middle" fill='#000000' fontSize={13} />
                         </Bar>
