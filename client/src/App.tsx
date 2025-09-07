@@ -105,7 +105,8 @@ function App() {
         <div className="flex w-full justify-center items-center space-x-6">
             <ArtistAnimation chartData={artistData} />
             <GenreAnimation chartData={genreData} />
-          </div><PlaylistAnimation playlistId='34DBc5q2EDa6snxvsLsSw9'/>
+            <PlaylistAnimation playlistId='34DBc5q2EDa6snxvsLsSw9'/>
+          </div>
           </>
       )}
     </div>
