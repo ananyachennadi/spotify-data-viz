@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { Bar, ResponsiveContainer, Line, Tooltip, XAxis, YAxis, ComposedChart } from "recharts";
+import { Bar, ResponsiveContainer, Line, Tooltip, XAxis, YAxis, CartesianGrid, Area, AreaChart } from "recharts";
 
 const transformToHistogram = (data) => {
   const bins = Array.from({ length: 10 }, (_, i) => i * 10);
@@ -44,7 +44,7 @@ const PlaylistAnimation =({playlistId}) => {
         <div className="h-[300px] w-[300px] bg-[#f6f2f1] rounded-xl p-5 flex flex-col">
             <p className='text-[#000000] mb-2'>Song Popularity Breakdown</p>
             <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart data={popularityValues}>
+                <AreaChart data={popularityValues}>
                     <XAxis
                         dataKey="name"
                         hide
@@ -54,9 +54,9 @@ const PlaylistAnimation =({playlistId}) => {
                         backgroundColor: 'transparent',
                         border: 'none',
                         padding: 0,}}/>
-                    <Bar dataKey='count' fill="#8884d8"/>
-                    <Line type="monotone" dataKey="count" stroke="#ff7300" dot={false} />
-                </ComposedChart>
+                    <Area type="monotone" dataKey="count" stroke="#a0c4c3" fill="#c1d6db" fillOpacity={0.6}/>
+                    <CartesianGrid strokeDasharray="3 3" />
+                </AreaChart>
             </ResponsiveContainer>
             <div className="flex flex-row items-centre justify-between">
                 <p className="text-xs">least popular</p>
