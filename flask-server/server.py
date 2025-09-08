@@ -218,7 +218,7 @@ def track_popularity():
     except Exception as e:
         return jsonify({"error": f"An unexpected error occurred: {e}"}), 500     
 
-# gets the first 6 playlist names followed by or created by the user
+# gets the first 6 playlist names and ids followed by or created by the user
 @app.route('/user-playlists')
 def user_playlists():
     if 'access_token' not in session:
@@ -240,14 +240,17 @@ def user_playlists():
         response.raise_for_status()
 
         data = response.json()
-        playlist_names = []
+        playlist_data = []
 
         # store the names of the playlists in playlist_names from response
         if 'items' in data:
             for item in data['items']:
-                playlist_names.append(item['name'])
+                playlist_data.append({
+                    'id': item['id'],
+                    'name': item['name']
+                })
             
-            return jsonify(playlist_names)
+            return jsonify(playlist_data)
         
         else:
             return jsonify({"error": "Invalid data format from Spotify"}), 500
