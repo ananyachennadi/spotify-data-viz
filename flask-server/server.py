@@ -163,10 +163,8 @@ def genre_animated():
             
             # sort the dictionary in descending order and get the top 5 genres and count
             sorted_genres = sorted(genre_counts.items(), key=lambda item: item[1], reverse=True)
-            print(sorted_genres)
 
             top_5_genres = [{'genre' : genre, 'count': count} for genre, count in sorted_genres[:5]]
-            print(top_5_genres)
 
             return top_5_genres
 
