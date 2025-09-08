@@ -97,17 +97,22 @@ function App() {
 
   // if user is not authenticated render login component otherwise render dashboard and components in dashboard
   return (
-    <div className="flex justify-center items-center h-full w-full bg-[#1C1C1E] p-6">
+    <div className="flex flex-col justify-center items-center h-full w-full bg-[#1C1C1E] p-6">
       {!loginSuccess ? (
         <Login />
       ) : (
         <>
+        <div className="flex justify-start w-full text-2xl sm:text-3xl font-normal">
+          <h1 className="text-white text-2xl">welcome to your dashboard</h1>
+        </div>
         <div className="flex w-full justify-center items-center space-x-6">
             <ArtistAnimation chartData={artistData} />
             <GenreAnimation chartData={genreData} />
-            <PlaylistAnimation playlistId='34DBc5q2EDa6snxvsLsSw9'/>
-          </div>
-          </>
+        </div>
+        <div className="flex">
+          <PlaylistAnimation playlistId='34DBc5q2EDa6snxvsLsSw9'/>
+        </div>
+        </>
       )}
     </div>
   );
