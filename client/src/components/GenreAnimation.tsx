@@ -19,7 +19,7 @@ const GenreAnimation = ({ chartData }) => {
 
     // The return statement must be inside the component
     return (
-        <div className='flex flex-col w-[47%] h-[300px] rounded-xl p-5 bg-[#25272e]'>
+        <div className='flex flex-col w-[95%] sm:w-[49%] h-[300px] rounded-xl p-5 bg-[#25272e] mt-5'>
             <p className='text-[#ffffff] mb-2'>Your Top Genres</p>
             <div className='flex-1'>
                 <ResponsiveContainer width='100%' height='100%'>
@@ -31,7 +31,7 @@ const GenreAnimation = ({ chartData }) => {
                         border: 'none',
                         padding: 0,}}/>
                         <Bar dataKey="count" fill='#FF8C94' animationEasing='ease-in'>
-                            <LabelList dataKey="genre" position="middle" fill='#000000' fontSize={13} />
+                            <LabelList dataKey="genre" position="middle" fill='#000000' fontSize={12} />
                         </Bar>
                     </BarChart>
                 </ResponsiveContainer>

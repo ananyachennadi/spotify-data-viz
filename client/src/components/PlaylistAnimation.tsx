@@ -31,7 +31,6 @@ const PlaylistAnimation =({playlistId}) => {
                     const data = await response.json();
                     const histogramData = transformToHistogram(data);
                     setPopularityValues(histogramData);
-                    console.log(histogramData);
                 }
             } catch (error) {
                 console.error("Failed to fetch popularity data:", error);

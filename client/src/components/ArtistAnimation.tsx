@@ -15,7 +15,7 @@ const ArtistAnimation = ({chartData}) => {
     }, [chartData]);
 
   return (
-	<div className='flex flex-col w-[47%] h-[300px] rounded-xl p-5 bg-[#25272e]'>
+	<div className='flex flex-col w-[95%] sm:w-[49%] h-[300px] rounded-xl p-5 bg-[#25272e] mt-5'>
         <p className='text-[#ffffff] mb-2'>Your Top Artists</p>
         <div className='flex-1'>
             <ResponsiveContainer width='100%' height='100%'>
@@ -27,7 +27,7 @@ const ArtistAnimation = ({chartData}) => {
     border: 'none',
     padding: 0, }}/>
                     <Bar dataKey="value" fill='#fbc92c' animationEasing='ease-in' >
-                        <LabelList dataKey="name" position="middle" fill='#000000' fontSize={13}/>
+                        <LabelList dataKey="name" position="middle" fill='#000000' fontSize={12}/>
                     </Bar>
                 </BarChart>
             </ResponsiveContainer>
