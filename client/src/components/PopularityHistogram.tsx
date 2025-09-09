@@ -2,7 +2,7 @@ import { Bar, ResponsiveContainer, Line, Tooltip, XAxis, YAxis, CartesianGrid, A
 
 const PopularityHistogram =({values}) => {
     return(
-        <div className="h-[300px] w-[95%] md:w-[60%] bg-[#f6f2f1] rounded-xl p-5 flex flex-col items-center flex-shrink-0">
+        <div className="h-[300px] w-full md:w-[60%] bg-[#f6f2f1] rounded-xl p-5 flex flex-col items-center flex-shrink-0">
             <p className="">How popular are your saved songs?</p>
             <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={values}>
