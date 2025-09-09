@@ -199,20 +199,40 @@ const fetchSongsPopularity = async () => {
   return (
     <div className="flex flex-col justify-center items-center min-h-screen w-full bg-[#000000] p-4 overflow-y-auto overscroll-y-none">
       {!loginSuccess ? (
-        <Login />
+        <>
+        <div className="flex w-full justify-center items-center text-xl sm:text-2xl font-normal relative h-[30px] self-start">
+            <img src="/icon.png" className="h-full object-contain mr-2" alt="Your Music Icon" />
+            <h1 className="text-white">
+              Your Music
+            </h1>
+          </div>
+          <div>
+            <p className="text-white m-7">Log in to connect with Spotify</p>
+          </div>
+          <Login />
+          <div>
+            <p className="text-[#8c8c8c] mt-6 text-sm">Your data is safe and secure</p>
+          </div>
+          </>
       ) : (
         <>
-          <div className="flex w-full justify-center text-2xl sm:text-3xl font-normal">
-            <h1 className="text-white text-2xl">welcome to your dashboard</h1>
-            <a href="https://127.0.0.1:5000/logout" className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors duration-200">
-    Log Out
-</a>
+          <div className="flex w-full justify-between items-center text-xl sm:text-2xl font-normal relative">
+              <div className="flex-1"></div>
+              <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center justify-center h-[90%]">
+                  <img src="/icon.png" className="h-full object-contain mr-2" alt="Your Music Icon" />
+                  <h1 className="text-white">
+                      Your Music
+                  </h1>
+              </div>
+              <a href="https://127.0.0.1:5000/logout" className="px-2 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-800 transition-colors duration-300 text-base">
+                  Log Out
+              </a>
           </div>
           <div className="flex w-full justify-center mt-5 flex-col md:flex-row">
             <PopularityHistogram values={songsPopularity} />
             <div className="flex flex-col w-full mt-5 md:mt-0 md:ml-5 max-h-[300px] border p-3 rounded-lg border-dotted">
               <p className="text-white mb-2">Recently Played</p>
-              <div className="flex flex-col w-full gap-3">
+              <div className="flex flex-col w-full gap-3 overflow-y-scroll">
                   {recentlyPlayed.map((song) => (
                       <SongsPlayed cover={song.image} name={song.name} key={song.id}/>
                   ))}
