@@ -5,7 +5,7 @@ import GenreAnimation from "./components/GenreAnimation";
 import PopularityHistogram from "./components/PopularityHistogram"
 import type { Song } from "./types";
 import SongsPlayed from "./components/SongsPlayed";
-
+import { Analytics } from '@vercel/analytics/react';
 
 function App() {
   const API_URL = import.meta.env.VITE_API_URL;
@@ -193,6 +193,7 @@ const fetchSongsPopularity = async () => {
   // if user is not authenticated render login component otherwise render dashboard and components in dashboard
   return (
     <div className="flex flex-col justify-center items-center min-h-screen w-full bg-[#000000] p-4 overflow-y-auto overscroll-y-none">
+      <Analytics />
       {!loginSuccess ? (
         <>
         <div className="flex w-full justify-center items-center text-xl sm:text-2xl font-normal relative h-[30px] self-start">
