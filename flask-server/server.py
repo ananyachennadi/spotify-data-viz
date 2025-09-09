@@ -5,6 +5,7 @@ import os
 import urllib.parse
 from datetime import datetime
 from flask_cors import CORS
+import time
 
 load_dotenv()
 
@@ -23,7 +24,7 @@ apiBaseUrl = 'https://api.spotify.com/v1/'
 # constructs the url for user to log in to spotify
 @app.route('/login')
 def login():
-    scope = 'user-top-read playlist-read-private playlist-read-collaborative'
+    scope = 'user-top-read user-library-read'
 
     params = {
         'client_id': clientId,
@@ -171,125 +172,45 @@ def genre_animated():
         except requests.exceptions.HTTPError as e:
                 return jsonify({"error": f"Failed to fetch data from Spotify: {e}"}), response.status_code
         except Exception as e:
+            return jsonify({"error": f"An unexpected error occurred: {e}"}), 500   
+
+@app.route('/saved-tracks-popularity')
+def saved_tracks_popularity():
+    if 'access_token' not in session:
+        return redirect('/login')
+        
+    if datetime.now().timestamp() > session['expires_at']:
+        return redirect('/refresh-token?redirect_uri=' + request.path)
+    
+    headers = {
+        'Authorization': f'Bearer {session['access_token']}'
+    }  
+
+    # Fetch user's saved tracks
+    retries = 3
+    delay = 1
+    for i in range(retries):
+        try:
+            saved_tracks_response = requests.get(apiBaseUrl + 'me/tracks?limit=50', headers=headers)
+            saved_tracks_response.raise_for_status()
+
+            # Extract popularity scores
+            popularity_values = [item['track']['popularity'] for item in saved_tracks_response.json().get('items', [])]
+            return jsonify(popularity_values)
+
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code == 429 and i < retries - 1:
+                print(f"Rate limit exceeded. Retrying in {delay} seconds...")
+                time.sleep(delay)
+                delay *= 2  # Exponential backoff
+                continue
+            else:
+                return jsonify({"error": f"Failed to fetch saved tracks: {e}"}), e.response.status_code
+
+        except Exception as e:
             return jsonify({"error": f"An unexpected error occurred: {e}"}), 500  
 
-# gets popularity values for the first 50 songs in a playlist
-@app.route('/playlist-track-popularity')
-def track_popularity():        
-    if 'access_token' not in session:
-        return redirect('/login')
-        
-    if datetime.now().timestamp() > session['expires_at']:
-        return redirect('/refresh-token?redirect_uri=' + request.path)
-    
-    headers = {
-        'Authorization': f'Bearer {session['access_token']}'
-    }  
-    
-    playlist_id = request.args.get('playlist_id')
-
-    params = {
-        'fields': 'items(track(popularity))',
-        'limit': 50
-    }
-
-    try:
-        response = requests.get(apiBaseUrl + f'playlists/{playlist_id}/tracks', headers=headers, params=params)
-        response.raise_for_status()
-        
-        data = response.json()
-
-        # create an array with only popularity values
-        simplified_data = []
-        if 'items' in data:
-            for item in data['items']:
-                if 'track' in item and item['track'] and 'popularity' in item['track']:
-                    popularity = item['track']['popularity']
-                    simplified_data.append(popularity)
-            return jsonify(simplified_data)
-        else:
-            return jsonify({"error": "Invalid data format from Spotify"}), 500
- 
-    except requests.exceptions.HTTPError as e:
-        return jsonify({"error": f"Failed to fetch data from Spotify: {e}"}), response.status_code
-    
-    except Exception as e:
-        return jsonify({"error": f"An unexpected error occurred: {e}"}), 500     
-
-# gets the first 6 playlist names and ids followed by or created by the user
-@app.route('/user-playlists')
-def user_playlists():
-    if 'access_token' not in session:
-        return redirect('/login')
-        
-    if datetime.now().timestamp() > session['expires_at']:
-        return redirect('/refresh-token?redirect_uri=' + request.path)
-    
-    headers = {
-        'Authorization': f'Bearer {session['access_token']}'
-    }  
-
-    params = {
-        'limit': 6
-    }
-
-    try:
-        response = requests.get(apiBaseUrl + 'me/playlists', headers=headers, params=params)
-        response.raise_for_status()
-
-        data = response.json()
-        playlist_data = []
-
-        # store the names of the playlists in playlist_names from response
-        if 'items' in data:
-            for item in data['items']:
-                playlist_data.append({
-                    'id': item['id'],
-                    'name': item['name']
-                })
-            
-            return jsonify(playlist_data)
-        
-        else:
-            return jsonify({"error": "Invalid data format from Spotify"}), 500
-        
-    except requests.exceptions.HTTPError as e:
-        return jsonify({"error": f"Failed to fetch data from Spotify: {e}"}), response.status_code
-    
-    except Exception as e:
-        return jsonify({"error": f"An unexpected error occurred: {e}"}), 500  
-    
-# returns the url of the playlist cover image
-@app.route('/get-playlist-cover')
-def get_playlist_cover():
-    if 'access_token' not in session:
-        return redirect('/login')
-        
-    if datetime.now().timestamp() > session['expires_at']:
-        return redirect('/refresh-token?redirect_uri=' + request.path)
-    
-    headers = {
-        'Authorization': f'Bearer {session['access_token']}'
-    }  
-
-    playlist_id = request.args.get('playlist_id')
-
-    try:
-        response = requests.get(apiBaseUrl + f'playlists/{playlist_id}/images', headers=headers)
-        response.raise_for_status()
-
-        data = response.json()
-
-        if isinstance(data, list) and len(data) > 0 and 'url' in data[0]:
-            return jsonify(data[0]['url'])
-        else:
-            return jsonify({"error": "Invalid data format from Spotify"}), 500
-            
-    except requests.exceptions.HTTPError as e:
-        return jsonify({"error": f"Failed to fetch data from Spotify: {e}"}), response.status_code
-    
-    except Exception as e:
-        return jsonify({"error": f"An unexpected error occurred: {e}"}), 500  
+    return jsonify({"error": "Failed to fetch saved tracks after multiple retries due to rate limiting."}), 429
 
 # lets react know if the user is authenticated or not
 @app.route('/is-authenticated')
@@ -298,6 +219,7 @@ def is_authenticated():
         return jsonify({'authenticated': True})
     else:
         return jsonify({'authenticated': False}), 401
+
           
 if __name__ == '__main__':
     app.run(
