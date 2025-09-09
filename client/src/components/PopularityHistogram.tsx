@@ -1,6 +1,10 @@
-import { Bar, ResponsiveContainer, Line, Tooltip, XAxis, YAxis, CartesianGrid, Area, AreaChart } from "recharts";
+import { ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, Area, AreaChart } from "recharts";
 
-const PopularityHistogram =({values}) => {
+interface PopularityHistogramProps {
+  values: { name: string; count: number; }[];
+}
+
+const PopularityHistogram =({values}: PopularityHistogramProps) => {
     return(
         <div className="h-[300px] w-full md:w-[60%] bg-[#f6f2f1] rounded-xl p-5 flex flex-col items-center flex-shrink-0">
             <p className="">How popular are your saved songs?</p>

@@ -1,21 +1,26 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { LabelList, Bar, BarChart, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
-const GenreAnimation = ({ chartData }) => {
-    // set genre data when a change is detected in the input parameter
-    const [genreData, setGenreData] = useState({
-        short_term: [],
-        medium_term: [],
-        long_term: []
-    });
-    const [selectedTimeRange, setSelectedTimeRange] = useState('short_term');
+// Define the type for a single genre object
+interface GenreDataPoint {
+    genre: string;
+    count: number;
+}
 
-    useEffect(() => {
-        setGenreData(prevData => ({
-            ...prevData,
-            ...chartData
-        }));
-    }, [chartData]);
+type TimeRangeKey = 'short_term' | 'medium_term' | 'long_term';
+
+
+// Define the type for the entire chartData prop
+interface ChartData {
+    short_term: GenreDataPoint[];
+    medium_term: GenreDataPoint[];
+    long_term: GenreDataPoint[];
+}
+
+const GenreAnimation = ({ chartData }: { chartData: ChartData }) => {
+    // set genre data when a change is detected in the input parameter
+    const [selectedTimeRange, setSelectedTimeRange] = useState<TimeRangeKey>('short_term');
+    const dataForChart = chartData[selectedTimeRange];
 
     // The return statement must be inside the component
     return (
@@ -23,7 +28,7 @@ const GenreAnimation = ({ chartData }) => {
             <p className='text-[#ffffff] mb-2'>Your Top Genres</p>
             <div className='flex-1'>
                 <ResponsiveContainer width='100%' height='100%'>
-                    <BarChart data={genreData[selectedTimeRange]} layout='vertical' key={selectedTimeRange}>
+                    <BarChart data={dataForChart} layout='vertical' key={selectedTimeRange}>
                         <XAxis type="number" hide />
                         <YAxis type="category" dataKey="genre" hide />
                         <Tooltip wrapperStyle={{visibility: 'hidden',

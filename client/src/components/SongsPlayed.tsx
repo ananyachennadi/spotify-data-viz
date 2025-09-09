@@ -1,4 +1,9 @@
-const RecentlyPlayed = ({name, cover}) => {
+interface RecentlyPlayedProps {
+  name: string;
+  cover: string;
+}
+
+const RecentlyPlayed = ({name, cover}: RecentlyPlayedProps) => {
     console.log(cover)
     console.log(name)
     return(

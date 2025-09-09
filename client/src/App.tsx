@@ -3,16 +3,28 @@ import Login from "./components/Login";
 import ArtistAnimation from "./components/ArtistAnimation";
 import GenreAnimation from "./components/GenreAnimation";
 import PopularityHistogram from "./components/PopularityHistogram"
-import { Song } from "./types";
+import type { Song } from "./types";
 import SongsPlayed from "./components/SongsPlayed";
 
+
 function App() {
+  const API_URL = import.meta.env.VITE_API_URL;
   const [loginSuccess, setLoginSuccess] = useState(false);
-  const [artistData, setArtistData] = useState({
-    short_term: [],
-    medium_term: [],
-    long_term: []
-  });
+  // Define a type for the data structure inside the arrays
+  interface Artist {
+    name: string;
+    value: number;
+}
+
+const [artistData, setArtistData] = useState<{
+  short_term: Artist[];
+  medium_term: Artist[];
+  long_term: Artist[];
+}>({
+  short_term: [],
+  medium_term: [],
+  long_term: []
+});
   const [genreData, setGenreData] = useState({
     short_term: [],
     medium_term: [],
@@ -20,16 +32,17 @@ function App() {
   });
   const [songsPopularity, setSongsPopularity] = useState<{ name: string; count: number; }[]>([]);
   const [recentlyPlayed, setRecentlyPlayed] = useState<Song[]>([]);
+  type TimeRange = 'short_term' | 'medium_term' | 'long_term';
 
   useEffect(() => {
-    const fetchArtistData = async (time_range) => {
+    const fetchArtistData = async (time_range: TimeRange) => {
       try {
-        const response = await fetch(`https://127.0.0.1:5000/artist-animated?time_range=${time_range}`, {
+        const response = await fetch(`${API_URL}/artist-animated?time_range=${time_range}`, {
           credentials: 'include'
         });
         if (response.ok) {
           const data = await response.json();
-          const transformedData = data.map((name, index) => ({
+          const transformedData = data.map((name:string, index:number) => ({
             name: name,
             value: 20 - (index * 2)
           }));
@@ -45,9 +58,9 @@ function App() {
       }
     };
 
-    const fetchGenreData = async (time_range) => {
+    const fetchGenreData = async (time_range:TimeRange) => {
       try {
-        const response = await fetch(`https://127.0.0.1:5000/genre-animated?time_range=${time_range}`, {
+        const response = await fetch(`${API_URL}/genre-animated?time_range=${time_range}`, {
           credentials: 'include'
         });
         if (response.ok) {
@@ -67,7 +80,7 @@ function App() {
     const fetchRecentlyPlayed = async () => {
     try {
         // 1. Fetch the list of recently played songs first
-        const songsResponse = await fetch(`https://127.0.0.1:5000/recently-played`, {
+        const songsResponse = await fetch(`${API_URL}/recently-played`, {
             credentials: 'include',
         });
         if (!songsResponse.ok) {
@@ -77,9 +90,9 @@ function App() {
 
         // 2. Concurrently fetch the song cover for each song
         const updatedSongsWithImages = await Promise.all(
-            songsData.map(async (song) => {
+            songsData.map(async (song: Song) => {
                 try {
-                    const coverResponse = await fetch(`https://127.0.0.1:5000/song-cover?id=${song.id}`, {
+                    const coverResponse = await fetch(`${API_URL}/song-cover?id=${song.id}`, {
                         credentials: 'include',
                     });
 
@@ -92,8 +105,7 @@ function App() {
 
                     const coverData = await coverResponse.json();
                     
-                    // Use a fallback URL in case 'url' is missing from the response
-                    const imageUrl = coverData.url || 'path/to/placeholder-image.png';
+                    const imageUrl = coverData.url;
 
                     return { ...song, image: imageUrl };
 
@@ -112,7 +124,7 @@ function App() {
         console.error('An error occurred during fetch:', error);
     }
 };
-    const transformToHistogram = (data) => {
+    const transformToHistogram = (data: number[]) => {
       const bins = Array.from({ length: 10 }, (_, i) => i * 10);
       const histogramData = bins.map((binStart) => ({
         name: `${binStart}-${binStart + 9}`,
@@ -132,7 +144,7 @@ function App() {
 // Your data fetching function
 const fetchSongsPopularity = async () => {
   try {
-    const response = await fetch(`https://127.0.0.1:5000/saved-tracks-popularity`, {
+    const response = await fetch(`${API_URL}/saved-tracks-popularity`, {
       credentials: 'include'
     });
     if (response.ok) {
@@ -150,7 +162,7 @@ const fetchSongsPopularity = async () => {
     const fetchAllData = async () => {
       // First, check the authentication status
       try {
-        const authResponse = await fetch('https://127.0.0.1:5000/is-authenticated', {
+        const authResponse = await fetch(`${API_URL}/is-authenticated`, {
         credentials: 'include'
         });
         const authData = await authResponse.json();
@@ -177,23 +189,6 @@ const fetchSongsPopularity = async () => {
     // Call the master function
     fetchAllData();
   }, []);
-
-    const handleLogout = async () => {
-    try {
-        const response = await fetch('https://127.0.0.1:5000/logout', {
-            credentials: 'include'
-        });
-
-        if (response.ok || response.status === 302) {
-            setLoginSuccess(false);
-            window.location.reload();
-        } else {
-            console.error('Logout failed.');
-        }
-    } catch (error) {
-        console.error('An error occurred during logout:', error);
-    }
-};
 
   // if user is not authenticated render login component otherwise render dashboard and components in dashboard
   return (

@@ -1,25 +1,26 @@
-import { useState, useEffect} from 'react';
+import { useState} from 'react';
 import {LabelList, Bar, BarChart, XAxis, YAxis, Tooltip, ResponsiveContainer} from 'recharts'
 
-const ArtistAnimation = ({chartData}) => {
+interface ArtistAnimationProps {
+    chartData: {
+        short_term: { name: string, value: number }[];
+        medium_term: { name: string, value: number }[];
+        long_term: { name: string, value: number }[];
+    }
+}
+
+
+const ArtistAnimation = ({chartData}:ArtistAnimationProps) => {
+    type TimeRangeKey = 'short_term' | 'medium_term' | 'long_term';
     // set artist data when a change is detected in the input parameter
-    const [artistData, setArtistData] = useState({
-        short_term: [],
-        medium_term: [],
-        long_term: []
-      });
-    const [selectedTimeRange, setSelectedTimeRange] = useState('short_term');
-
-    useEffect(() => {
-        setArtistData(chartData);
-    }, [chartData]);
-
+    const [selectedTimeRange, setSelectedTimeRange] = useState<TimeRangeKey>('short_term');
+    const dataForChart = chartData[selectedTimeRange];
   return (
 	<div className='flex flex-col w-[95%] sm:w-[49%] h-[300px] rounded-xl p-5 bg-[#25272e] mt-5'>
         <p className='text-[#ffffff] mb-2'>Your Top Artists</p>
         <div className='flex-1'>
             <ResponsiveContainer width='100%' height='100%'>
-                <BarChart data={artistData[selectedTimeRange]} layout='vertical' key={selectedTimeRange}>
+                <BarChart data={dataForChart} layout='vertical' key={selectedTimeRange}>
                     <XAxis type="number" hide />
                     <YAxis type="category" dataKey="name" hide />
                     <Tooltip wrapperStyle={{ visibility: 'hidden',
