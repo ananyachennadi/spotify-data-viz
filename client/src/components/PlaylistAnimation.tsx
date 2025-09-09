@@ -40,8 +40,7 @@ const PlaylistAnimation =({playlistId}) => {
     }, [playlistId]);
 
     return(
-        <div className="h-[300px] w-[300px] bg-[#f6f2f1] rounded-xl p-5 flex flex-col">
-            <p className='text-[#000000] mb-2'>Song Popularity Breakdown</p>
+        <div className="h-[300px] w-[300px] bg-[#f6f2f1] rounded-xl p-5 flex flex-col flex-grow items-center">
             <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={popularityValues}>
                     <XAxis
@@ -57,9 +56,9 @@ const PlaylistAnimation =({playlistId}) => {
                     <CartesianGrid strokeDasharray="3 3" />
                 </AreaChart>
             </ResponsiveContainer>
-            <div className="flex flex-row items-centre justify-between">
-                <p className="text-xs">least popular</p>
-                <p className="text-xs">most popular</p>
+            <div className="flex flex-row items-center justify-between w-full">
+                <p className="text-xs text-black">least popular</p>
+                <p className="text-xs text-black">most popular</p>
             </div>
         </div>
     )

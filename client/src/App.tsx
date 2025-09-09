@@ -80,7 +80,6 @@ function App() {
     };
 
     const getPlaylistImages = async (playlists) => {
-      console.log('Fetching playlist images...');
       const updatedPlaylists = await Promise.all(
         playlists.map(async (playlist) => {
           try {
@@ -89,7 +88,6 @@ function App() {
             });
             if (response.ok) {
               const data = await response.json();
-              console.log("Image data received:", data);
               return { ...playlist, image: data };
             } else {
               console.error("Failed to fetch cover for playlist:", playlist.name);
@@ -99,9 +97,9 @@ function App() {
             console.error("Network or parsing error for playlist:", playlist.name, error);
             return playlist;
           }
-        })
-      );
-      setPlaylistsData(updatedPlaylists);
+            })
+          );
+      setPlaylistsData(updatedPlaylists.filter(p => p.image !== null));    
     };
 
     const getPlaylists = async () => {
@@ -111,10 +109,10 @@ function App() {
         });
         if (response.ok) {
           const data = await response.json();
-          setPlaylistsData(data);
+          const validPlaylists = data.filter(playlist => playlist.id);
+          setPlaylistsData(validPlaylists);
           // Only call getPlaylistImages AFTER playlistsData is fetched
-          getPlaylistImages(data);
-          console.log(playlistsData)
+          getPlaylistImages(validPlaylists);
         } else {
           console.error("Failed to fetch playlists. Status:", response.status);
         }
@@ -136,7 +134,7 @@ function App() {
 
   // if user is not authenticated render login component otherwise render dashboard and components in dashboard
   return (
-    <div className="flex flex-col justify-center items-center min-h-screen w-full bg-[#1C1C1E] p-6 overflow-y-auto overscroll-y-none">
+    <div className="flex flex-col justify-center items-center min-h-screen w-full bg-[#1C1C1E] p-4 overflow-y-auto overscroll-y-none">
       {!loginSuccess ? (
         <Login />
       ) : (
@@ -148,9 +146,9 @@ function App() {
             <ArtistAnimation chartData={artistData} />
             <GenreAnimation chartData={genreData} />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-[2vw] gap-y-[4vh] p-5 w-full ">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-x-[3vw] gap-y-[3vh] p-5 w-full ">
             {playlistsData.map((playlist) => (
-              <PlaylistCard key={playlist.id} cover={playlist.image} name={playlist.name}/>
+              <PlaylistCard id={playlist.id} cover={playlist.image} name={playlist.name} key={playlist.id}/>
             ))}
           </div>
         </>
