@@ -16,7 +16,7 @@ app.secret_key = os.getenv('SECRET_KEY')
 clientId = os.getenv('SPOTIFY_CLIENT_ID')
 clientSecret = os.getenv('SPOTIFY_CLIENT_SECRET')
 
-CORS(app, supports_credentials=True, origins=[REACT_APP_URL, FLASK_API_URL])
+CORS(app, origins=["https://spotify-dash-six.vercel.app"], supports_credentials=True)
 
 redirectUri = f'{FLASK_API_URL}/callback'
 authUrl = 'https://accounts.spotify.com/authorize'
