@@ -205,7 +205,7 @@ const fetchSongsPopularity = async () => {
           <div>
             <p className="text-white m-7">Log in to connect with Spotify</p>
           </div>
-          <Login />
+          <Login API_URL={API_URL}/>
           <div>
             <p className="text-[#8c8c8c] mt-6 text-sm">Your data is safe and secure</p>
           </div>
@@ -220,7 +220,7 @@ const fetchSongsPopularity = async () => {
                       Your Music
                   </h1>
               </div>
-              <a href="https://127.0.0.1:5000/logout" className="px-2 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-800 transition-colors duration-300 text-base">
+              <a href={`${API_URL}/logout`} className="px-2 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-800 transition-colors duration-300 text-base">
                   Log Out
               </a>
           </div>
