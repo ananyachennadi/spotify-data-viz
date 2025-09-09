@@ -2,8 +2,7 @@ import { useState, useEffect } from "react";
 import Login from "./components/Login";
 import ArtistAnimation from "./components/ArtistAnimation";
 import GenreAnimation from "./components/GenreAnimation";
-import PlaylistCard from "./components/PlaylistCard";
-import { Playlist } from "./types";
+import PopularityHistogram from "./components/PopularityHistogram"
 
 function App() {
   const [loginSuccess, setLoginSuccess] = useState(false);
@@ -17,25 +16,8 @@ function App() {
     medium_term: [],
     long_term: []
   });
-  const [playlistsData, setPlaylistsData] = useState<Playlist[]>([]);
-
+  const [songsPopularity, setSongsPopularity] = useState<{ name: string; count: number; }[]>([]);
   useEffect(() => {
-    const checkAuthStatus = async () => {
-      try {
-        const response = await fetch('https://127.0.0.1:5000/is-authenticated', {
-          credentials: 'include'
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setLoginSuccess(data.authenticated);
-        } else {
-          setLoginSuccess(false);
-        }
-      } catch (error) {
-        console.error("Failed to check authentication status", error);
-        setLoginSuccess(false);
-      }
-    };
 
     const fetchArtistData = async (time_range) => {
       try {
@@ -79,57 +61,69 @@ function App() {
       }
     };
 
-    const getPlaylistImages = async (playlists) => {
-      const updatedPlaylists = await Promise.all(
-        playlists.map(async (playlist) => {
-          try {
-            const response = await fetch(`https://127.0.0.1:5000/get-playlist-cover?playlist_id=${playlist.id}`, {
-              credentials: 'include'
-            });
-            if (response.ok) {
-              const data = await response.json();
-              return { ...playlist, image: data };
-            } else {
-              console.error("Failed to fetch cover for playlist:", playlist.name);
-              return playlist;
-            }
-          } catch (error) {
-            console.error("Network or parsing error for playlist:", playlist.name, error);
-            return playlist;
-          }
-            })
-          );
-      setPlaylistsData(updatedPlaylists.filter(p => p.image !== null));    
-    };
+    const transformToHistogram = (data) => {
+  const bins = Array.from({ length: 10 }, (_, i) => i * 10);
+  const histogramData = bins.map((binStart) => ({
+    name: `${binStart}-${binStart + 9}`,
+    count: 0,
+  }));
 
-    const getPlaylists = async () => {
+  data.forEach((value) => {
+    const binIndex = Math.floor(value / 10);
+    if (binIndex >= 0 && binIndex < histogramData.length) {
+      histogramData[binIndex].count += 1;
+    }
+  });
+
+  return histogramData;
+};
+
+// Your data fetching function
+const fetchSongsPopularity = async () => {
+  try {
+    const response = await fetch(`https://127.0.0.1:5000/saved-tracks-popularity`, {
+      credentials: 'include'
+    });
+    if (response.ok) {
+      const data = await response.json();
+      // Correctly call the transformation function and pass its result to the state setter
+      const transformedData = transformToHistogram(data);
+      setSongsPopularity(transformedData);
+    } else {
+      console.error("Failed to fetch song popularity. Status:", response.status);
+    }
+  } catch (error) {
+    console.error("Network or parsing error:", error);
+  }
+};
+    const fetchAllData = async () => {
+      // First, check the authentication status
       try {
-        const response = await fetch(`https://127.0.0.1:5000/user-playlists`, {
-          credentials: 'include'
+        const authResponse = await fetch('https://127.0.0.1:5000/is-authenticated', {
+        credentials: 'include'
         });
-        if (response.ok) {
-          const data = await response.json();
-          const validPlaylists = data.filter(playlist => playlist.id);
-          setPlaylistsData(validPlaylists);
-          // Only call getPlaylistImages AFTER playlistsData is fetched
-          getPlaylistImages(validPlaylists);
-        } else {
-          console.error("Failed to fetch playlists. Status:", response.status);
+        const authData = await authResponse.json();
+        setLoginSuccess(authData.authenticated);
+
+        if (authData.authenticated) {
+          // If authenticated, proceed to fetch all other data sequentially
+          await fetchArtistData('short_term');
+          await fetchArtistData('medium_term');
+          await fetchArtistData('long_term');
+          
+          await fetchGenreData('short_term');
+          await fetchGenreData('medium_term');
+          await fetchGenreData('long_term');
+          await fetchSongsPopularity();
         }
       } catch (error) {
-        console.error("Network or parsing error:", error);
+        console.error("Failed to fetch initial data:", error);
+        setLoginSuccess(false);
       }
     };
-
-    // Call the functions
-    checkAuthStatus();
-    fetchArtistData('short_term');
-    fetchArtistData('medium_term');
-    fetchArtistData('long_term');
-    fetchGenreData('short_term');
-    fetchGenreData('medium_term');
-    fetchGenreData('long_term');
-    getPlaylists();
+    
+    // Call the master function
+    fetchAllData();
   }, []);
 
   // if user is not authenticated render login component otherwise render dashboard and components in dashboard
@@ -146,12 +140,10 @@ function App() {
             <ArtistAnimation chartData={artistData} />
             <GenreAnimation chartData={genreData} />
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-x-[3vw] gap-y-[3vh] p-5 w-full">
-            {playlistsData.map((playlist) => (
-              <PlaylistCard id={playlist.id} cover={playlist.image} name={playlist.name} key={playlist.id}/>
-            ))}
+          <div className="flex w-full justify-center mt-5">
+            <PopularityHistogram values={songsPopularity}/>
           </div>
-        </>
+                 </>
       )}
     </div>
   );
