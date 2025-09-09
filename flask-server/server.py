@@ -24,7 +24,7 @@ apiBaseUrl = 'https://api.spotify.com/v1/'
 # constructs the url for user to log in to spotify
 @app.route('/login')
 def login():
-    scope = 'user-top-read user-library-read'
+    scope = 'user-top-read user-library-read user-read-recently-played'
 
     params = {
         'client_id': clientId,
@@ -188,7 +188,6 @@ def saved_tracks_popularity():
 
     # Fetch user's saved tracks
     retries = 3
-    delay = 1
     for i in range(retries):
         try:
             saved_tracks_response = requests.get(apiBaseUrl + 'me/tracks?limit=50', headers=headers)
@@ -200,9 +199,7 @@ def saved_tracks_popularity():
 
         except requests.exceptions.HTTPError as e:
             if e.response.status_code == 429 and i < retries - 1:
-                print(f"Rate limit exceeded. Retrying in {delay} seconds...")
-                time.sleep(delay)
-                delay *= 2  # Exponential backoff
+                print(f"Rate limit exceeded.")
                 continue
             else:
                 return jsonify({"error": f"Failed to fetch saved tracks: {e}"}), e.response.status_code
@@ -211,6 +208,35 @@ def saved_tracks_popularity():
             return jsonify({"error": f"An unexpected error occurred: {e}"}), 500  
 
     return jsonify({"error": "Failed to fetch saved tracks after multiple retries due to rate limiting."}), 429
+
+@app.route('/recently-played')
+def recently_played():
+    if 'access_token' not in session:
+        return redirect('/login')
+        
+    if datetime.now().timestamp() > session['expires_at']:
+        return redirect('/refresh-token?redirect_uri=' + request.path)
+    
+    headers = {
+        'Authorization': f'Bearer {session['access_token']}'
+    }
+
+    params = {
+         'limit': 5
+    }
+
+    try:
+            response = requests.get(apiBaseUrl + 'me/player/recently-played', headers=headers, params=params)
+            response.raise_for_status()
+
+            tracks = [{'id': item['track']['id'], 'name': item['track']['name']} for item in response.json().get('items', [])]
+            return jsonify(tracks)
+
+    except requests.exceptions.HTTPError as e:
+            return jsonify({"error": f"Failed to fetch data from Spotify: {e}"}), response.status_code
+
+    except Exception as e:
+            return jsonify({"error": f"An unexpected error occurred: {e}"}), 500  
 
 # lets react know if the user is authenticated or not
 @app.route('/is-authenticated')

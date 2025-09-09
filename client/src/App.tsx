@@ -141,7 +141,7 @@ const fetchSongsPopularity = async () => {
             <GenreAnimation chartData={genreData} />
           </div>
           <div className="flex w-full justify-center mt-5">
-            <PopularityHistogram values={songsPopularity}/>
+            <PopularityHistogram values={songsPopularity} />
           </div>
                  </>
       )}
