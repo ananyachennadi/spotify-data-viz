@@ -1,4 +1,4 @@
-from flask import Flask, redirect, request, jsonify, session
+from flask import Flask, redirect, request, jsonify, session, url_for
 from dotenv import load_dotenv
 import requests
 import os
@@ -127,6 +127,7 @@ def artist_animated():
     except Exception as e:
         return jsonify({"error": f"An unexpected error occurred: {e}"}), 500
 
+# get the top 5 genres based on a specified time range
 @app.route('/genre-animated')
 def genre_animated():        
         if 'access_token' not in session:
@@ -209,6 +210,7 @@ def saved_tracks_popularity():
 
     return jsonify({"error": "Failed to fetch saved tracks after multiple retries due to rate limiting."}), 429
 
+# get 3 most recently played songs by the user
 @app.route('/recently-played')
 def recently_played():
     if 'access_token' not in session:
@@ -222,13 +224,14 @@ def recently_played():
     }
 
     params = {
-         'limit': 5
+         'limit': 3
     }
 
     try:
             response = requests.get(apiBaseUrl + 'me/player/recently-played', headers=headers, params=params)
             response.raise_for_status()
 
+            # store the id and names of the songs
             tracks = [{'id': item['track']['id'], 'name': item['track']['name']} for item in response.json().get('items', [])]
             return jsonify(tracks)
 
@@ -238,6 +241,7 @@ def recently_played():
     except Exception as e:
             return jsonify({"error": f"An unexpected error occurred: {e}"}), 500  
     
+# get the song cover using a specified song id
 @app.route('/song-cover')
 def song_cover():
     if 'access_token' not in session:
@@ -258,19 +262,26 @@ def song_cover():
 
             album_images = response.json().get('album', {}).get('images', [])
 
-            # Get the URL of the largest image (usually the first one)
+            # Get the URL of the song image
             cover_url = album_images[0]['url'] if album_images else None
 
             if cover_url:
                 return jsonify({'url': cover_url})
             else:
-                return jsonify('no cover found')
+                return jsonify({"error": "No album cover found"}), 404
 
     except requests.exceptions.HTTPError as e:
             return jsonify({"error": f"Failed to fetch data from Spotify: {e}"}), response.status_code
 
     except Exception as e:
             return jsonify({"error": f"An unexpected error occurred: {e}"}), 500 
+
+@app.route('/logout')
+def logout():
+    # Clear the user's session data
+    session.clear()
+    # Redirect the user back to the login page or home page
+    return redirect(url_for('index'))
 
 # lets react know if the user is authenticated or not
 @app.route('/is-authenticated')
