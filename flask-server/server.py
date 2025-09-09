@@ -237,6 +237,40 @@ def recently_played():
 
     except Exception as e:
             return jsonify({"error": f"An unexpected error occurred: {e}"}), 500  
+    
+@app.route('/song-cover')
+def song_cover():
+    if 'access_token' not in session:
+        return redirect('/login')
+        
+    if datetime.now().timestamp() > session['expires_at']:
+        return redirect('/refresh-token?redirect_uri=' + request.path)
+    
+    headers = {
+        'Authorization': f'Bearer {session['access_token']}'
+    }
+
+    id = request.args.get('id')
+
+    try:
+            response = requests.get(apiBaseUrl + f'tracks/{id}', headers=headers)
+            response.raise_for_status()
+
+            album_images = response.json().get('album', {}).get('images', [])
+
+            # Get the URL of the largest image (usually the first one)
+            cover_url = album_images[0]['url'] if album_images else None
+
+            if cover_url:
+                return jsonify({'url': cover_url})
+            else:
+                return jsonify('no cover found')
+
+    except requests.exceptions.HTTPError as e:
+            return jsonify({"error": f"Failed to fetch data from Spotify: {e}"}), response.status_code
+
+    except Exception as e:
+            return jsonify({"error": f"An unexpected error occurred: {e}"}), 500 
 
 # lets react know if the user is authenticated or not
 @app.route('/is-authenticated')
