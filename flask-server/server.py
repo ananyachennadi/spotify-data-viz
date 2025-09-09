@@ -65,7 +65,8 @@ def callback():
         session['access_token'] = token_info['access_token']
         session['refresh_token'] = token_info['refresh_token']
         session['expires_at'] = datetime.now().timestamp() + token_info['expires_in']
-        return redirect(f'{REACT_APP_URL}')    
+        print("Session after callback:", dict(session))
+        return redirect(f'{REACT_APP_URL}')  
     else:
         return jsonify({'Error': "Authorisation code not provided."}), 400
 
@@ -290,6 +291,7 @@ def logout():
 # lets react know if the user is authenticated or not
 @app.route('/is-authenticated')
 def is_authenticated():
+    print("Session on is-authenticated request:", dict(session))
     if 'access_token' in session and datetime.now().timestamp() < session['expires_at']:
         return jsonify({'authenticated': True})
     else:
