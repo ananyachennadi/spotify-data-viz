@@ -281,7 +281,7 @@ def logout():
     # Clear the user's session data
     session.clear()
     # Redirect the user back to the login page or home page
-    return redirect(url_for('index'))
+    return redirect('https://127.0.0.1:5173/')
 
 # lets react know if the user is authenticated or not
 @app.route('/is-authenticated')
