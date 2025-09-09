@@ -210,7 +210,7 @@ def saved_tracks_popularity():
 
     return jsonify({"error": "Failed to fetch saved tracks after multiple retries due to rate limiting."}), 429
 
-# get 3 most recently played songs by the user
+# get 6 most recently played songs by the user
 @app.route('/recently-played')
 def recently_played():
     if 'access_token' not in session:
@@ -224,7 +224,7 @@ def recently_played():
     }
 
     params = {
-         'limit': 3
+         'limit': 6
     }
 
     try:
