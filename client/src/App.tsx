@@ -3,6 +3,7 @@ import Login from "./components/Login";
 import ArtistAnimation from "./components/ArtistAnimation";
 import GenreAnimation from "./components/GenreAnimation";
 import PopularityHistogram from "./components/PopularityHistogram"
+import { Song } from "./types";
 
 function App() {
   const [loginSuccess, setLoginSuccess] = useState(false);
@@ -17,6 +18,8 @@ function App() {
     long_term: []
   });
   const [songsPopularity, setSongsPopularity] = useState<{ name: string; count: number; }[]>([]);
+  const [recentlyPlayed, setRecentlyPlayed] = useState<Song[]>([]);
+
   useEffect(() => {
 
     const fetchArtistData = async (time_range) => {
@@ -61,22 +64,58 @@ function App() {
       }
     };
 
+    const fetchRecentlyPlayed = async () => {
+      try {
+        // 1. Fetch the list of recently played songs first
+        const songsResponse = await fetch(`https://127.0.0.1:5000/recently-played`, {
+          credentials: 'include',
+        });
+        if (!songsResponse.ok) {
+          throw new Error(`Failed to fetch recently played songs. Status: ${songsResponse.status}`);
+        }
+        const songsData = await songsResponse.json();
+
+        // 2. Concurrently fetch the song cover for each song
+        const updatedSongsWithImages = await Promise.all(
+          songsData.map(async (song) => {
+            try {
+              const coverResponse = await fetch(`https://127.0.0.1:5000/song-cover?id=${song.id}`, {
+                credentials: 'include',
+              });
+              const coverData = await coverResponse.json();
+              // Assuming the server response is an object like { url: '...' }
+              return { ...song, imageUrl: coverData.url }; 
+            } catch (error) {
+              console.error(`Failed to fetch cover for song "${song.name}":`, error);
+              // Return the original song object if fetching the image fails
+              return song;
+            }
+          })
+        );
+
+        // 3. Update the state a single time with the complete data
+        setRecentlyPlayed(updatedSongsWithImages);
+      } catch (error) {
+        console.error('An error occurred during fetch:', error);
+      }
+    };
+
     const transformToHistogram = (data) => {
-  const bins = Array.from({ length: 10 }, (_, i) => i * 10);
-  const histogramData = bins.map((binStart) => ({
-    name: `${binStart}-${binStart + 9}`,
-    count: 0,
-  }));
+      const bins = Array.from({ length: 10 }, (_, i) => i * 10);
+      const histogramData = bins.map((binStart) => ({
+        name: `${binStart}-${binStart + 9}`,
+        count: 0,
+      }));
 
-  data.forEach((value) => {
-    const binIndex = Math.floor(value / 10);
-    if (binIndex >= 0 && binIndex < histogramData.length) {
-      histogramData[binIndex].count += 1;
-    }
-  });
+      data.forEach((value) => {
+        const binIndex = Math.floor(value / 10);
+        if (binIndex >= 0 && binIndex < histogramData.length) {
+          histogramData[binIndex].count += 1;
+        }
+      });
 
-  return histogramData;
-};
+      return histogramData;
+    };
 
 // Your data fetching function
 const fetchSongsPopularity = async () => {
@@ -115,6 +154,7 @@ const fetchSongsPopularity = async () => {
           await fetchGenreData('medium_term');
           await fetchGenreData('long_term');
           await fetchSongsPopularity();
+          fetchRecentlyPlayed();
         }
       } catch (error) {
         console.error("Failed to fetch initial data:", error);
@@ -143,7 +183,7 @@ const fetchSongsPopularity = async () => {
           <div className="flex w-full justify-center mt-5">
             <PopularityHistogram values={songsPopularity} />
           </div>
-                 </>
+        </>
       )}
     </div>
   );
