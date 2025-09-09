@@ -146,7 +146,7 @@ function App() {
             <ArtistAnimation chartData={artistData} />
             <GenreAnimation chartData={genreData} />
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-x-[3vw] gap-y-[3vh] p-5 w-full ">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-x-[3vw] gap-y-[3vh] p-5 w-full">
             {playlistsData.map((playlist) => (
               <PlaylistCard id={playlist.id} cover={playlist.image} name={playlist.name} key={playlist.id}/>
             ))}
