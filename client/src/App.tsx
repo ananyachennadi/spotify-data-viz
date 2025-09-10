@@ -186,9 +186,22 @@ const fetchSongsPopularity = async () => {
       }
     };
     
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    // This line defines the 'code' variable
+    const code = urlParams.get('code');
     // Call the master function
+    if (code) {
+    // We only apply the delay on the initial redirect with a 'code'
+    console.log("Found a code. Waiting 2 seconds before checking authentication.");
+    setTimeout(() => {
+      fetchAllData();
+    }, 2000); // 2000 milliseconds = 2 seconds
+  } else {
+    // On all other loads, check immediately
     fetchAllData();
-  }, []);
+  }
+  }, [API_URL]);
 
   // if user is not authenticated render login component otherwise render dashboard and components in dashboard
   return (

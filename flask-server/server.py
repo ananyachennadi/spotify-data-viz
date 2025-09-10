@@ -318,7 +318,6 @@ def logout():
 # lets react know if the user is authenticated or not
 @app.route('/is-authenticated')
 def is_authenticated():
-    print("Session on is-authenticated request:", dict(session))
     access_token = request.cookies.get('access_token')
     if access_token:
         return jsonify({'authenticated': True})
