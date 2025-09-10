@@ -184,9 +184,9 @@ const fetchSongsPopularity = async () => {
         console.error("Failed to fetch initial data:", error);
         setLoginSuccess(false);
       }
-    
+    }
     fetchAllData();
-  }
+  
   }, [API_URL]);
 
   // if user is not authenticated render login component otherwise render dashboard and components in dashboard

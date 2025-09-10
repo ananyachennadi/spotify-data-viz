@@ -41,7 +41,7 @@ def login():
 
     auth_url = f'{authUrl}?{urllib.parse.urlencode(params)}'
     
-    return redirect(auth_url)
+    return jsonify({'auth_url': auth_url})
 
 # route to provide client secret and obtain an access token
 @app.route('/callback')
@@ -60,6 +60,9 @@ def callback():
         # send information needed to obtain an access token to the spotify api and store the response
         response = requests.post(tokenUrl, data=req_body)
         token_info = response.json()
+
+        if 'error' in token_info:
+            return jsonify({'error': token_info['error']}), 400
 
         # store key information from the response
         expires_at = datetime.now() + timedelta(seconds=token_info.get('expires_in', 3600))
