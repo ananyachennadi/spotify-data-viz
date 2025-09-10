@@ -11,9 +11,10 @@ This is a private project created for personal data exploration and is not avail
 
 ## Key Features
 
-* **✅ Top Artists & Genres:** See your most-listened-to artists and genres from the past month, six months, and year.
+* **⭐️ Top Artists & Genres:** See your most-listened-to artists and genres from the past month, six months, and year.
 * **📈 Song Popularity Analysis:** A line graph displays the popularity distribution of your saved songs on a scale of 0 to 100.
-* **🔍 Recently Played Tracks:** A list of your most recent tracks, complete with album art and song titles.
+* **🎧 Recently Played Tracks:** A list of your most recent tracks, complete with album art and song titles.
+* **📱 Fully Responsive Design:** The dashboard is optimised for seamless viewing and use on all devices.
 
 ***
 
