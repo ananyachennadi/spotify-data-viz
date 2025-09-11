@@ -12,7 +12,7 @@ app = Flask(__name__)
 
 app.config['SESSION_COOKIE_SAMESITE'] = 'None'
 app.config['SESSION_COOKIE_SECURE'] = True
-app.config['SESSION_COOKIE_DOMAIN'] = 'spotify-dash-rax3.onrender.com'
+app.config['SESSION_COOKIE_DOMAIN'] = '.onrender.com'
 
 REACT_APP_URL = os.getenv('REACT_APP_URL')
 FLASK_API_URL = os.getenv('FLASK_API_URL')
