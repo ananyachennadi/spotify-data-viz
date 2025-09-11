@@ -1,9 +1,9 @@
-from flask import Flask, redirect, request, jsonify, session, make_response
+from flask import Flask, redirect, request, jsonify, session, url_for
 from dotenv import load_dotenv
 import requests
 import os
 import urllib.parse
-from datetime import datetime, timedelta
+from datetime import datetime
 from flask_cors import CORS
 
 load_dotenv()
@@ -12,7 +12,7 @@ app = Flask(__name__)
 
 app.config['SESSION_COOKIE_SAMESITE'] = 'None'
 app.config['SESSION_COOKIE_SECURE'] = True
-app.config['SESSION_COOKIE_DOMAIN'] = '.onrender.com'
+app.config['SESSION_COOKIE_DOMAIN'] = 'spotify-dash-rax3.onrender.com'
 
 REACT_APP_URL = os.getenv('REACT_APP_URL')
 FLASK_API_URL = os.getenv('FLASK_API_URL')
@@ -41,7 +41,7 @@ def login():
 
     auth_url = f'{authUrl}?{urllib.parse.urlencode(params)}'
     
-    return jsonify({'auth_url': auth_url})
+    return redirect(auth_url)
 
 # route to provide client secret and obtain an access token
 @app.route('/callback')
@@ -61,90 +61,49 @@ def callback():
         response = requests.post(tokenUrl, data=req_body)
         token_info = response.json()
 
-        if 'error' in token_info:
-            return jsonify({'error': token_info['error']}), 400
-
         # store key information from the response
-        expires_at = datetime.now() + timedelta(seconds=token_info.get('expires_in', 3600))
-
-        #set the cookies and then redirect
-        redirect_response = make_response(redirect(os.environ.get('REACT_APP_URL')))
-
-        # Set the access token as a secure, httponly cookie
-        redirect_response.set_cookie(
-            'access_token',
-            token_info.get('access_token'),
-            httponly=True,
-            secure=True,
-            samesite='None',
-            expires=expires_at
-        )
-
-        # Set the refresh token as a secure, httponly cookie
-        redirect_response.set_cookie(
-            'refresh_token',
-            token_info.get('refresh_token'),
-            httponly=True,
-            secure=True,
-            samesite='None'
-        )
-        
-        return redirect_response
+        session['access_token'] = token_info['access_token']
+        session['refresh_token'] = token_info['refresh_token']
+        session['expires_at'] = datetime.now().timestamp() + token_info['expires_in']
+        print("Session after callback:", dict(session))
+        return redirect(f'{REACT_APP_URL}')  
     else:
         return jsonify({'Error': "Authorisation code not provided."}), 400
 
 # refresh token path if access token has expired
 @app.route('/refresh-token')
 def refresh_token():
-     refresh_token = request.cookies.get('refresh_token')
-
-     if not refresh_token:
+     if 'refresh_token' not in session:
         return redirect('/login')
      
-     req_body = {
-        'grant_type': 'refresh_token',
-        'refresh_token': refresh_token,
-        'client_id': clientId,
-        'client_secret': clientSecret
-     }
+     if datetime.now().timestamp() > session['expires_at']:
+        req_body = {
+             'grant_type': 'refresh_token',
+             'refresh_token': session['refresh_token'],
+             'client_id': clientId,
+             'client_secret': clientSecret
+        }
 
         # send a post request to get a new access token and update the session object with the new access token and expiry time
-     response = requests.post(tokenUrl, data=req_body)
-     new_token_info = response.json()
+        response = requests.post(tokenUrl, data=req_body)
+        new_token_info = response.json()
 
-     expires_at = datetime.now() + timedelta(seconds=new_token_info.get('expires_in', 3600))
+        session['access_token'] = new_token_info['access_token']
+        session['expires_at'] = datetime.now().timestamp() + new_token_info['expires_in']
     
-     redirect_response = make_response(redirect(os.environ.get('REACT_APP_URL')))
-    
-     redirect_response.set_cookie(
-        'access_token',
-        new_token_info.get('access_token'),
-        httponly=True,
-        secure=True,
-        samesite='None',
-        expires=expires_at
-    )
-     
-     redirect_response.set_cookie(
-        'refresh_token',
-        new_token_info.get('refresh_token'),
-        httponly=True,
-        secure=True,
-        samesite='None'
-    )
-    
-     return redirect_response
-
-        
+        return redirect(f'{REACT_APP_URL}')
      
 # route gets the data of the top 5 artists from the users listening with the time range specified in the request
 @app.route('/artist-animated')
 def artist_animated():
-    if not request.cookies.get('access_token'):
+    if 'access_token' not in session:
              return redirect('/login')
         
+    if datetime.now().timestamp() > session['expires_at']:
+             return redirect('/refresh-token')
+        
     headers = {
-             'Authorization': f'Bearer {request.cookies.get('access_token')}'
+             'Authorization': f'Bearer {session['access_token']}'
     }
 
     time_range = request.args.get('time_range', 'medium_term')
@@ -176,11 +135,14 @@ def artist_animated():
 # get the top 5 genres based on a specified time range
 @app.route('/genre-animated')
 def genre_animated():        
-        if not request.cookies.get('access_token'):
+        if 'access_token' not in session:
              return redirect('/login')
         
+        if datetime.now().timestamp() > session['expires_at']:
+             return redirect('/refresh-token')
+        
         headers = {
-             'Authorization': f'Bearer {request.cookies.get('access_token')}'
+             'Authorization': f'Bearer {session['access_token']}'
         }  
 
         time_range = request.args.get('time_range', 'medium_term')
@@ -220,11 +182,14 @@ def genre_animated():
 
 @app.route('/saved-tracks-popularity')
 def saved_tracks_popularity():
-    if not request.cookies.get('access_token'):
+    if 'access_token' not in session:
         return redirect('/login')
         
+    if datetime.now().timestamp() > session['expires_at']:
+        return redirect('/refresh-token')
+    
     headers = {
-        'Authorization': f'Bearer {request.cookies.get('access_token')}'
+        'Authorization': f'Bearer {session['access_token']}'
     }  
 
     # Fetch user's saved tracks
@@ -253,11 +218,14 @@ def saved_tracks_popularity():
 # get 6 most recently played songs by the user
 @app.route('/recently-played')
 def recently_played():
-    if not request.cookies.get('access_token'):
+    if 'access_token' not in session:
         return redirect('/login')
         
+    if datetime.now().timestamp() > session['expires_at']:
+        return redirect('/refresh-token')
+    
     headers = {
-        'Authorization': f'Bearer {request.cookies.get('access_token')}'
+        'Authorization': f'Bearer {session['access_token']}'
     }
 
     params = {
@@ -281,11 +249,14 @@ def recently_played():
 # get the song cover using a specified song id
 @app.route('/song-cover')
 def song_cover():
-    if not request.cookies.get('access_token'):
+    if 'access_token' not in session:
         return redirect('/login')
         
+    if datetime.now().timestamp() > session['expires_at']:
+        return redirect('/refresh-token')
+    
     headers = {
-        'Authorization': f'Bearer {request.cookies.get('access_token')}'
+        'Authorization': f'Bearer {session['access_token']}'
     }
 
     id = request.args.get('id')
@@ -312,17 +283,16 @@ def song_cover():
 
 @app.route('/logout')
 def logout():
-    # Create a response object with a redirect to the frontend's home page
-    response = make_response(redirect(os.environ.get('REACT_APP_URL')))
-    response.set_cookie('access_token', '', httponly=True, secure=True, samesite='None', expires=0)
-    
-    return response
+    # Clear the user's session data
+    session.clear()
+    # Redirect the user back to the login page or home page
+    return redirect(f'{REACT_APP_URL}')
 
 # lets react know if the user is authenticated or not
 @app.route('/is-authenticated')
 def is_authenticated():
-    access_token = request.cookies.get('access_token')
-    if access_token:
+    print("Session on is-authenticated request:", dict(session))
+    if 'access_token' in session and datetime.now().timestamp() < session['expires_at']:
         return jsonify({'authenticated': True})
     else:
         return jsonify({'authenticated': False}), 401
