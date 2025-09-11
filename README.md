@@ -24,6 +24,8 @@ See a full walkthrough of the application below.
 
 ![Spotify Insights App Demo](https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExOGhtaXZnczN0M295Y3FldXA3Nm5ndGtmZW9wdTg2Nms1dnFrNTZ0NyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/VVwUgPse0IGVPGHk6g/giphy.gif)
 
+![Responsiveness Demo](https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExZXFkZzkyYzUyeWZhZmF6dmNlczR0NGU1a2ZxeDZ0NG5nZjN0NWdmZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/gllZLGAnmZJuwMALxp/giphy.gif)
+
 --- 
 
 ## Technologies Used
